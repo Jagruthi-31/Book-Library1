@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem('bp2-theme') === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } catch (e) {}
+  })();
+</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<title>Reading — Booked & Planned</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/design-system.css"/>
+</head>
+<body class="reader-body">
+
+<div class="reader-loading" id="readerLoading">
+  <div class="spinner" style="width:26px;height:26px;border-width:3px;color:var(--accent);"></div>
+  <p class="text-muted" style="margin-top:14px;">Loading your book…</p>
+</div>
+
+<div class="reader-loading hidden" id="readerError">
+  <p class="text-muted" id="readerErrorMsg" style="max-width:320px;text-align:center;">This book could not be found.</p>
+  <button class="btn btn-ghost" id="readerErrorBackBtn" style="margin-top:18px;">← Go back</button>
+</div>
+
+<div class="reader-bar hidden" id="readerBar">
+  <button class="btn-icon" id="readerBackBtn" aria-label="Back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="reader-title-wrap">
+    <div class="reader-title" id="readerTitle">Loading…</div>
+    <div class="reader-page-indicator">
+      <button type="button" class="reader-page-current" id="readerPageCurrentBtn" aria-label="Jump to a page">–</button>
+      <input type="number" class="reader-page-current-input hidden" id="readerPageCurrentInput" min="1" aria-label="Page number"/>
+      <span class="reader-page-total">/ <span id="readerPageTotal">–</span></span>
+    </div>
+  </div>
+  <div class="reader-timer" id="readerTimer" title="Time reading this session">0:00</div>
+  <div class="reader-bar-actions">
+    <div class="reader-fit-group" role="group" aria-label="Fit mode">
+      <button class="btn-icon active" id="fitWidthBtn" aria-label="Fit width" title="Fit width">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>
+      </button>
+      <button class="btn-icon" id="fitPageBtn" aria-label="Fit page" title="Fit page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="1.4"/></svg>
+      </button>
+    </div>
+    <div class="reader-bar-divider"></div>
+    <button class="btn-icon" id="zoomOutBtn" aria-label="Zoom out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+    </button>
+    <span class="reader-zoom-label" id="readerZoomLabel">100%</span>
+    <button class="btn-icon" id="zoomInBtn" aria-label="Zoom in">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <div class="reader-bar-divider"></div>
+    <button class="btn-icon" id="readerDarkToggle" aria-label="Toggle reading mode" title="Toggle dark/light reading mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+    </button>
+    <button class="btn-icon" id="readerFullscreenBtn" aria-label="Full screen" title="Full screen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="reader-viewport hidden" id="readerViewport">
+  <button class="reader-nav-btn reader-nav-prev" id="prevPageBtn" aria-label="Previous page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="reader-canvas-wrap" id="canvasWrap">
+    <canvas id="pdfCanvas"></canvas>
+  </div>
+  <button class="reader-nav-btn reader-nav-next" id="nextPageBtn" aria-label="Next page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+</div>
+
+<div class="reader-progress-track hidden" id="readerProgressTrack">
+  <div class="reader-progress-fill" id="readerProgressFill"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="../assets/js/reader-page.js"></script>
+</body>
+</html>
